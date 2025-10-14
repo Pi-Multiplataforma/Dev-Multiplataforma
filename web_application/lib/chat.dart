@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-const String PEXELS_API_KEY = 'X6y0kJLOW8YMaa75gABhhlnhuMFNHCBcvydaPxxVvMAh6wnTMrDAhZYz';
-
 void main() => runApp(const ChatApp());
 
 class ChatApp extends StatelessWidget {
@@ -29,9 +27,9 @@ class ChatApp extends StatelessWidget {
 }
 
 class ChatMessage {
-  final bool isUser;     // true = usuário, false = IA
-  final String? text;    // texto do prompt ou erro
-  final String? image;   // URL da imagem
+  final bool isUser;
+  final String? text;
+  final String? image;
 
   ChatMessage.user(this.text)
       : isUser = true,
@@ -48,47 +46,45 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final _messages = <ChatMessage>[];
-  final _input = TextEditingController();
-  bool _sending = false;
+  final _messages = <ChatMessage>[];  // Lista de mensagens do chat
+  final _input = TextEditingController();  // Controlador do campo de input
+  bool _sending = false;  // Verifica se uma imagem está sendo gerada
 
-  // Pega 1 imagem na Pexels com base no prompt
+  // Função que chama o servidor para gerar a imagem
   Future<String?> _generateImage(String prompt) async {
-    final uri = Uri.https('api.pexels.com', '/v1/search', {
-      'query': prompt,
-      'per_page': '1',
-      'page': '1',
-    });
-
-    final res = await http.get(uri, headers: {'Authorization': PEXELS_API_KEY});
-
-    if (res.statusCode != 200) return null;
-
-    final data = jsonDecode(res.body) as Map<String, dynamic>;
-    final photos = (data['photos'] as List?) ?? [];
-    if (photos.isEmpty) return null;
-
-    final src = photos.first['src'] as Map<String, dynamic>;
-    return (src['medium'] as String?) ?? (src['original'] as String?);
+    try {
+      final res = await http.post(
+        Uri.parse('http://localhost:4000/generate-image'),  // Endereço do backend
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'prompt': prompt}),  // Envia o prompt para o backend
+      );
+      if (res.statusCode != 200) return null;  // Se o código não for 200, retorna null
+      final data = jsonDecode(res.body);  // Decodifica a resposta JSON do backend
+      return data['image_url'] as String?;  // Retorna a URL da imagem
+    } catch (e) {
+      print('Falha de rede: $e');  // Exibe o erro se a rede falhar
+      return null;
+    }
   }
 
+  // Envia o prompt e recebe a imagem gerada
   Future<void> _onSend() async {
-    final text = _input.text.trim();
-    if (text.isEmpty || _sending) return;
+    final text = _input.text.trim();  // Pega o texto do prompt
+    if (text.isEmpty || _sending) return;  // Verifica se o texto está vazio ou se está gerando a imagem
 
     setState(() {
-      _messages.add(ChatMessage.user(text));
+      _messages.add(ChatMessage.user(text));  // Exibe o texto do usuário
       _sending = true;
       _input.clear();
     });
 
-    final url = await _generateImage(text);
+    final url = await _generateImage(text);  // Chama o backend para gerar a imagem
 
     setState(() {
       if (url == null) {
-        _messages.add(ChatMessage.ai(text: 'Não encontrei imagem para: "$text"'));
+        _messages.add(ChatMessage.ai(text: 'Não encontrei imagem para: "$text"'));  // Caso não tenha imagem
       } else {
-        _messages.add(ChatMessage.ai(image: url));
+        _messages.add(ChatMessage.ai(image: url));  // Exibe a imagem gerada
       }
       _sending = false;
     });
@@ -101,21 +97,14 @@ class _ChatPageState extends State<ChatPage> {
         leadingWidth: 78,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(width: 12),
-            // Se a não tiver logo, troca por um ícone
-            Image.asset(
-              'assets/images/logo_poliedro.png',
-              width: 28,
-              height: 28,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Icon(Icons.image, color: Colors.white),
-            ),
-            const SizedBox(width: 10),
-            Container(width: 2, height: 18, color: Colors.white70),
+          children: const [
+            SizedBox(width: 12),
+            Icon(Icons.image_outlined, color: Colors.white, size: 28),  // Ícone no lugar da logo
+            SizedBox(width: 10),
+            SizedBox(width: 2, height: 18, child: DecoratedBox(decoration: BoxDecoration(color: Colors.white70))),
           ],
         ),
-        title: const Text(''),
+        title: const Text(''),  // Mantém o alinhamento do título
         actions: const [
           _TopLink(text: 'Minha galeria'),
           _DividerDot(),
@@ -126,16 +115,13 @@ class _ChatPageState extends State<ChatPage> {
       body: Column(
         children: [
           const SizedBox(height: 12),
-          // Lista de mensagens
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               itemCount: _messages.length,
-              itemBuilder: (_, i) => _ChatBubble(_messages[i]),
+              itemBuilder: (_, i) => _ChatBubble(_messages[i]),  // Exibe o balão da mensagem
             ),
           ),
-
-          // espaço de texto + botão enviar
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 14),
             child: Row(
@@ -143,7 +129,7 @@ class _ChatPageState extends State<ChatPage> {
                 Expanded(
                   child: TextField(
                     controller: _input,
-                    onSubmitted: (_) => _onSend(),
+                    onSubmitted: (_) => _onSend(),  // Quando o usuário apertar Enter
                     decoration: const InputDecoration(
                       hintText: 'Descreva a imagem',
                       isDense: true,
@@ -153,10 +139,8 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-
-                // botão enviar
                 ElevatedButton(
-                  onPressed: _sending ? null : _onSend,
+                  onPressed: _sending ? null : _onSend,  // Desabilita o botão enquanto está enviando
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF26A5AE),
                     foregroundColor: Colors.white,
@@ -164,11 +148,8 @@ class _ChatPageState extends State<ChatPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   ),
                   child: _sending
-                      ? const SizedBox(
-                          width: 16, height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.send, size: 18),
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))  // Mostra o carregamento
+                      : const Icon(Icons.send, size: 18),  // Ícone do botão de envio
                 ),
               ],
             ),
@@ -179,7 +160,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-// balão de mensagem
+// Widget para mostrar a mensagem com imagem ou texto
 class _ChatBubble extends StatelessWidget {
   final ChatMessage msg;
   const _ChatBubble(this.msg);
@@ -192,7 +173,6 @@ class _ChatBubble extends StatelessWidget {
 
     Widget content;
     if (msg.image != null) {
-      // resposta da API com imagem
       content = Container(
         width: 280,
         height: 260,
@@ -210,14 +190,13 @@ class _ChatBubble extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Image.network(
-          msg.image!,
+          msg.image!,  // Exibe a imagem gerada
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) =>
-              const Center(child: Text('Falha ao carregar imagem')),
+              const Center(child: Text('Falha ao carregar imagem')),  // Mensagem de erro
         ),
       );
     } else {
-      // Balão de texto
       content = Container(
         constraints: const BoxConstraints(maxWidth: 360),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -226,8 +205,7 @@ class _ChatBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: border, width: 1.6),
         ),
-        child: Text(msg.text ?? '',
-            style: const TextStyle(color: Color(0xFF11646C))),
+        child: Text(msg.text ?? '', style: const TextStyle(color: Color(0xFF11646C))),
       );
     }
 
@@ -247,7 +225,7 @@ class _ChatBubble extends StatelessWidget {
   }
 }
 
-//cabeçalho
+// Link superior
 class _TopLink extends StatelessWidget {
   final String text;
   const _TopLink({super.key, required this.text});
@@ -255,9 +233,9 @@ class _TopLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: () {}, // ligar depois
+      onPressed: () {},  // Link ainda não tem ação
       child: Text(
-        text, 
+        text,
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w600,
@@ -267,6 +245,7 @@ class _TopLink extends StatelessWidget {
   }
 }
 
+// Separador de link
 class _DividerDot extends StatelessWidget {
   const _DividerDot({super.key});
 
