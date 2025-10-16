@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+
 void main() => runApp(const ChatApp());
 
 class ChatApp extends StatelessWidget {
@@ -54,7 +55,7 @@ class _ChatPageState extends State<ChatPage> {
   Future<String?> _generateImage(String prompt) async {
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:4000/generate-image'),  // Endereço do backend
+        Uri.parse('http://localhost:4001/generate-image'),  // Endereço do backend
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'prompt': prompt}),  // Envia o prompt para o backend
       );

@@ -1,0 +1,10 @@
+#normaliza texto para LF no repositório 
+* text=auto eol=lf
+
+#scripts Windows que precisam CRLF
+*.bat eol=crlf
+*.cmd eol=crlf
+*.ps1 eol=crlf
+
+#scripts Unix
+*.sh eol=lf
