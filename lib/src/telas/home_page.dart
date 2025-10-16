@@ -638,12 +638,11 @@ Widget footer(BuildContext context) {
                 ],
               ),
             ),
-          ],
-        ),
 
-        const SizedBox(height: 40),
+            SizedBox(width: 20),
 
-        Column(
+            Flexible(
+              child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
@@ -654,30 +653,33 @@ Widget footer(BuildContext context) {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
-            Row(
+            const SizedBox(height: 15),
+            Column(
               children: [
                 SvgPicture.asset(
                   'assets/instagram_icon.svg',
                   colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  width: 30,
-                  height: 30,
+                  width: 20,
+                  height: 20,
                 ),
-                SizedBox(width: 20),
+                SizedBox(height: 15),
                 SvgPicture.asset(
                   'assets/facebook_icon.svg',
                   colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  width: 30,
-                  height: 30,
+                  width: 20,
+                  height: 20,
                 ),
-                SizedBox(width: 20),
+                SizedBox(height: 15),
                 SvgPicture.asset(
                   'assets/youtube_icon.svg',
                   colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  width: 30,
-                  height: 30,
+                  width: 20,
+                  height: 20,
                 ),
               ],
+            ),
+          ],
+        ),
             ),
           ],
         ),
