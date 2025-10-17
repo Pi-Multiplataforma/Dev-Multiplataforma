@@ -654,7 +654,7 @@ Widget footer(BuildContext context) {
               ),
             ),
             const SizedBox(height: 15),
-            Column(
+            Row(
               children: [
                 SvgPicture.asset(
                   'assets/instagram_icon.svg',
@@ -662,14 +662,14 @@ Widget footer(BuildContext context) {
                   width: 20,
                   height: 20,
                 ),
-                SizedBox(height: 15),
+                SizedBox(width: 15),
                 SvgPicture.asset(
                   'assets/facebook_icon.svg',
                   colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   width: 20,
                   height: 20,
                 ),
-                SizedBox(height: 15),
+                SizedBox(width: 15),
                 SvgPicture.asset(
                   'assets/youtube_icon.svg',
                   colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
