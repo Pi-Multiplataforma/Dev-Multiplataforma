@@ -160,7 +160,7 @@ Widget loginPopup(BuildContext context) {
             child: const TextField(
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Usuário',
+                hintText: 'Email',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
               ),
             ),
@@ -274,7 +274,7 @@ Widget cadastroPopup(BuildContext context) {
               obscureText: true, 
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Senha',
+                hintText: 'Email',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
               ),
             ),
@@ -293,7 +293,7 @@ Widget cadastroPopup(BuildContext context) {
               obscureText: true, 
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Confirmar senha',
+                hintText: 'Senha',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
               ),
             ),
