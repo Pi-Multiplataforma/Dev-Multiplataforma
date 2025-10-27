@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hovering/hovering.dart';
+import '../../utilities/dependencies.dart';
+import 'package:get/get.dart';
+import 'conversa_ia.dart';
+
+
 
 class HomePage extends StatelessWidget {
   @override
@@ -138,12 +143,18 @@ PreferredSizeWidget minhaBarra(BuildContext context) {
   );
 }
 
+
+final TextEditingController emailLoginController = TextEditingController();
+final TextEditingController senhaLoginController = TextEditingController();
+
 Widget loginPopup(BuildContext context) {
+  final authController = Get.find<AuthController>();
+
   return AlertDialog(
-    backgroundColor: Color.fromARGB(255, 239, 239, 239),
+    backgroundColor: const Color.fromARGB(255, 239, 239, 239),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
-      side: BorderSide(color: Colors.white, width: 3), 
+      side: const BorderSide(color: Colors.white, width: 3),
     ),
     content: Column(
       mainAxisSize: MainAxisSize.min,
@@ -154,11 +165,12 @@ Widget loginPopup(BuildContext context) {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Color(0xFF2DC7CD)),
+              border: Border.all(color: const Color(0xFF2DC7CD)),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
+            child: TextFormField(
+              controller: emailLoginController,
+              decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Email',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -168,15 +180,17 @@ Widget loginPopup(BuildContext context) {
         ),
         const SizedBox(height: 10),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Color(0xFF2DC7CD)),
+              border: Border.all(color: const Color(0xFF2DC7CD)),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: TextField(
-              decoration: InputDecoration(
+            child: TextFormField(
+              controller: senhaLoginController,
+              obscureText: true,
+              decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Senha',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -188,72 +202,113 @@ Widget loginPopup(BuildContext context) {
       ],
     ),
     actions: [
-  ElevatedButton(
-    onPressed: () => Navigator.pop(context),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Color(0xFF2DC7CD),
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+      ElevatedButton(
+        onPressed: () => Navigator.pop(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2DC7CD),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Cancelar',
+          style: TextStyle(
+            fontFamily: 'Inria Sans',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-    ),
-    child: const Text(
-      'Cancelar',
-      style: TextStyle(
-        fontFamily: 'Inria Sans',
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-  ElevatedButton(
-    onPressed: () {
-      
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Color(0xFF2DC7CD),
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-    child: const Text(
-      'Entrar',
-      style: TextStyle(
-        fontFamily: 'Inria Sans',
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-],
+      ElevatedButton(
+        onPressed: () async {
+          final email = emailLoginController.text.trim();
+          final senha = senhaLoginController.text.trim();
 
+          if (email.isEmpty || senha.isEmpty) {
+            Get.snackbar('Erro', 'Preencha todos os campos',
+              backgroundColor: Colors.red, colorText: Colors.white);
+            return;
+          }
+
+          final resultado = await authController.signIn(email, senha);
+
+          if (resultado == 'sucess') {
+
+            Get.snackbar('Bem-vindo', 'Login realizado com sucesso!',
+              backgroundColor: Colors.green, colorText: Colors.white);
+            emailLoginController.clear();
+            senhaLoginController.clear();
+            Navigator.pop(context);
+            Get.offNamed('/conversa_ia');
+          } else {
+            final mensagemErro = resultado.contains('Instance of')
+              ? 'Erro ao fazer login.'
+              : resultado;
+
+            Get.snackbar('Erro ao entrar', mensagemErro,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+            );
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2DC7CD),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Entrar',
+          style: TextStyle(
+            fontFamily: 'Inria Sans',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ],
   );
 }
 
+
+
+
+
+RxString status = 'enter-details'.obs;
+
+final TextEditingController nomeController = TextEditingController();
+final TextEditingController emailController = TextEditingController();
+final TextEditingController senhaController = TextEditingController();
+
+
 Widget cadastroPopup(BuildContext context) {
+  final authController = Get.find<AuthController>();
+
   return AlertDialog(
-    backgroundColor: Color.fromARGB(255, 239, 239, 239),
+    backgroundColor: const Color.fromARGB(255, 239, 239, 239),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(20),
-      side: BorderSide(color: Colors.white, width: 3), 
+      side: const BorderSide(color: Colors.white, width: 3),
     ),
     content: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Color(0xFF2DC7CD)),
+              border: Border.all(color: const Color(0xFF2DC7CD)),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
+            child: TextFormField(
+              controller: nomeController,
+              decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Usuário',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -261,18 +316,19 @@ Widget cadastroPopup(BuildContext context) {
             ),
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Color(0xFF2DC7CD)),
+              border: Border.all(color: const Color(0xFF2DC7CD)),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: TextField(
-              obscureText: true, 
-              decoration: InputDecoration(
+            child: TextFormField(
+              controller: emailController,
+              obscureText: false,
+              decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Email',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -280,18 +336,19 @@ Widget cadastroPopup(BuildContext context) {
             ),
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Color(0xFF2DC7CD)),
+              border: Border.all(color: const Color(0xFF2DC7CD)),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: TextField(
-              obscureText: true, 
-              decoration: InputDecoration(
+            child: TextFormField(
+              controller: senhaController,
+              obscureText: true,
+              decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Senha',
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
@@ -299,53 +356,83 @@ Widget cadastroPopup(BuildContext context) {
             ),
           ),
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
       ],
     ),
     actions: [
-  ElevatedButton(
-    onPressed: () => Navigator.pop(context),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Color(0xFF2DC7CD),
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+      ElevatedButton(
+        onPressed: () => Navigator.pop(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2DC7CD),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Cancelar',
+          style: TextStyle(
+            fontFamily: 'Inria Sans',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-    ),
-    child: const Text(
-      'Cancelar',
-      style: TextStyle(
-        fontFamily: 'Inria Sans',
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-  ElevatedButton(
-    onPressed: () {
-      
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Color(0xFF2DC7CD),
-      foregroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-    ),
-    child: const Text(
-      'Cadastrar',
-      style: TextStyle(
-        fontFamily: 'Inria Sans',
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-],
+      ElevatedButton(
+        onPressed: () async {
+          final nome = nomeController.text.trim();
+          final email = emailController.text.trim();
+          final senha = senhaController.text.trim();
+
+          if (nome.isEmpty && email.isEmpty && senha.isEmpty) {
+            Get.snackbar('Erro', 'Preencha todos os campos',
+              backgroundColor: Colors.red, colorText: Colors.white);
+            return;
+          }
+
+          final resultado = await authController.createAccount(nome, email, senha);
+
+          if (resultado == 'sucess') {
+            Get.snackbar('Sucesso', 'Conta criada com sucesso!',
+              backgroundColor: Colors.green, colorText: Colors.white);
+            nomeController.clear();
+            emailController.clear();
+            senhaController.clear();
+            Navigator.pop(context);
+          } else {
+  final mensagemErro = resultado.contains('Instance of')
+      ? 'Erro ao criar conta.'
+      : resultado;
+
+  Get.snackbar('Erro ao cadastrar', mensagemErro,
+    backgroundColor: Colors.red,
+    colorText: Colors.white,
   );
 }
+
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2DC7CD),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Cadastrar',
+          style: TextStyle(
+            fontFamily: 'Inria Sans',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 
 Widget textoPrincipal(BuildContext context) {
   double largura = MediaQuery.of(context).size.width;
