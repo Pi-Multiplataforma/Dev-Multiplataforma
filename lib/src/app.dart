@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pi_dev_multiplataforma/src/telas/conversa_ia_mobile.dart';
 import '../src/telas/home_page.dart';
 import 'package:get/get.dart';
 import '../utilities/dependencies.dart' as dependencies;
@@ -16,7 +17,7 @@ class App extends StatelessWidget{
   initialBinding: dependencies.InitialBindings(),
   initialRoute: '/',
   getPages: [
-    GetPage(name: '/', page: () => HomePage()),
+    GetPage(name: '/', page: () => ConversaIaMobile()),
     GetPage(name: '/conversa_ia', page: () => ConversaIa()), 
   ],
 );
