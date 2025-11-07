@@ -61,7 +61,6 @@ class _LoginPageState extends State<LoginPage> {
                         child: PillButton(
                           label: 'Entrar',
                           onTap: () {
-                            // TODO: lógica de login
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Entrar')),
                             );
