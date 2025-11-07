@@ -29,7 +29,6 @@ class _SignUpPageState extends State<SignUpPage> {
       );
       return;
     }
-    // TODO: chamada de cadastro
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Criar conta')),
     );
