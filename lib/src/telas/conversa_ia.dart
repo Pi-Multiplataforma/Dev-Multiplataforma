@@ -3,6 +3,24 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hovering/hovering.dart';
 import '../../utilities/dependencies.dart';
 import 'package:get/get.dart';
+import 'dart:ui' as ui;
+import 'dart:js' as js;
+
+class GeoGebraPage extends StatelessWidget {
+  const GeoGebraPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("GeoGebra")),
+      body: const HtmlElementView(viewType: 'geogebra-element'),
+    );
+  }
+}
+
+void enviarComandoGeoGebra(String comando) {
+  js.context.callMethod("eval", ["ggbApplet.evalCommand('$comando');"]);
+}
 
 class ConversaIa extends StatefulWidget {
   @override
@@ -49,10 +67,7 @@ class _ConversaIaState extends State<ConversaIa> {
                       ),
                       child: Text(
                         mensagens[index],
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
                   ),
@@ -76,7 +91,23 @@ class _ConversaIaState extends State<ConversaIa> {
                 ),
                 SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: responder,
+                  onPressed: () {
+                    final texto = _controller.text.trim();
+
+                    if (texto.isEmpty) return;
+
+                    setState(() {
+                      mensagens.add(texto);
+                      _controller.clear();
+                    });
+
+                    if (texto.toLowerCase().startsWith("grafique")) {
+                      final func = texto
+                          .substring(8)
+                          .trim(); 
+                      enviarComandoGeoGebra("f(x)=$func");
+                    }
+                  },
                   child: Text('Enviar'),
                 ),
               ],
@@ -88,12 +119,9 @@ class _ConversaIaState extends State<ConversaIa> {
   }
 }
 
-
-
-
 PreferredSizeWidget minhaBarraIa(BuildContext context) {
   return AppBar(
-     automaticallyImplyLeading: false,
+    automaticallyImplyLeading: false,
     elevation: 8,
     shadowColor: Colors.black,
     backgroundColor: const Color(0xFF2DC7CD),
@@ -108,84 +136,82 @@ PreferredSizeWidget minhaBarraIa(BuildContext context) {
         const Spacer(),
 
         MouseRegion(
-  cursor: SystemMouseCursors.click,
-  child: GestureDetector(
-    onTap: () {
-      
-    },
-    child: HoverWidget(
-      onHover: (event) {},
-      hoverChild: const Text(
-        'Galeria',
-        style: TextStyle(
-          fontFamily: 'Inria Sans',
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          shadows: [
-            Shadow(
-              offset: Offset(0, 0),
-              blurRadius: 8,
-              color: Colors.black45,
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {},
+            child: HoverWidget(
+              onHover: (event) {},
+              hoverChild: const Text(
+                'Galeria',
+                style: TextStyle(
+                  fontFamily: 'Inria Sans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 0),
+                      blurRadius: 8,
+                      color: Colors.black45,
+                    ),
+                  ],
+                ),
+              ),
+              child: const Text(
+                'Galeria',
+                style: TextStyle(
+                  fontFamily: 'Inria Sans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ],
+          ),
         ),
-      ),
-      child: const Text(
-        'Galeria',
-        style: TextStyle(
-          fontFamily: 'Inria Sans',
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    ),
-  ),
-),
 
         const SizedBox(width: 10),
         Container(height: 30, width: 3, color: Colors.white),
         const SizedBox(width: 10),
 
         MouseRegion(
-  cursor: SystemMouseCursors.click,
-  child: GestureDetector(
-    onTap: () {
-  final authController = Get.find<AuthController>();
-  authController.signOut();
-},
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              final authController = Get.find<AuthController>();
+              authController.signOut();
+            },
 
-    child: HoverWidget(
-      onHover: (event) {}, // obrigatório
-      hoverChild: const Text(
-        'Sair',
-        style: TextStyle(
-          fontFamily: 'Inria Sans',
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          shadows: [
-            Shadow(
-              offset: Offset(0, 0),
-              blurRadius: 8,
-              color: Colors.black45,
+            child: HoverWidget(
+              onHover: (event) {}, // obrigatório
+              hoverChild: const Text(
+                'Sair',
+                style: TextStyle(
+                  fontFamily: 'Inria Sans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 0),
+                      blurRadius: 8,
+                      color: Colors.black45,
+                    ),
+                  ],
+                ),
+              ),
+              child: const Text(
+                'Sair',
+                style: TextStyle(
+                  fontFamily: 'Inria Sans',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ],
+          ),
         ),
-      ),
-      child: const Text(
-        'Sair',
-        style: TextStyle(
-          fontFamily: 'Inria Sans',
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    ),
-  ),
-),
       ],
     ),
   );
