@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import '../../utilities/dependencies.dart';
 import 'widgets/auth.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -10,28 +11,36 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final _user = TextEditingController();
+  final _name = TextEditingController();
+  final _email = TextEditingController();
   final _pass = TextEditingController();
-  final _pass2 = TextEditingController();
 
   @override
   void dispose() {
-    _user.dispose();
+    _name.dispose();
+    _email.dispose();
     _pass.dispose();
-    _pass2.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    if (_pass.text != _pass2.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('As senhas não coincidem.')),
-      );
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Criar conta')),
+  void _submit() async {
+    final authController = Get.find<AuthController>();
+    final result = await authController.createAccount(
+      _name.text,
+      _email.text,
+      _pass.text,
     );
+
+    if (result == 'sucess') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conta criada com sucesso!')),
+      );
+      Get.offNamed('/login'); // redireciona para login
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $result')),
+      );
+    }
   }
 
   @override
@@ -45,30 +54,15 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const SizedBox(height: 28),
                   const AuthLogo(),
                   const SizedBox(height: 28),
-                  LinedTextField(
-                    label: 'Usuário',
-                    controller: _user,
-                    textInputAction: TextInputAction.next,
-                  ),
+                  LinedTextField(label: 'Nome', controller: _name),
                   const SizedBox(height: 16),
-                  LinedTextField(
-                    label: 'Senha',
-                    controller: _pass,
-                    isPassword: true,
-                    textInputAction: TextInputAction.next,
-                  ),
+                  LinedTextField(label: 'Email', controller: _email),
                   const SizedBox(height: 16),
-                  LinedTextField(
-                    label: 'Insira a senha novamente',
-                    controller: _pass2,
-                    isPassword: true,
-                    textInputAction: TextInputAction.done,
-                  ),
+                  LinedTextField(label: 'Senha', controller: _pass, isPassword: true),
                   const SizedBox(height: 28),
                   Row(
                     children: [
@@ -96,4 +90,3 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
-

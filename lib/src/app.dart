@@ -5,6 +5,8 @@ import '../src/telas/home_page.dart';
 import 'package:get/get.dart';
 import '../utilities/dependencies.dart' as dependencies;
 import '../src/telas/conversa_ia.dart';
+import '../signup_screen.dart';
+import '../login_screen.dart';
 
 import 'dart:io' show Platform;
 
@@ -23,10 +25,13 @@ class App extends StatelessWidget{
   // abre MobileHome em Android/iOS, e HomePage nas outras plataformas
   home: isMobile ? MobileHome() : HomePage(),
       getPages: [
-        GetPage(name: '/home_page', page: () => HomePage()),
-        GetPage(name: '/conversa_ia', page: () => ConversaIa()), 
-        GetPage(name: '/mobile_home', page: () => MobileHome())
-      ],
+  GetPage(name: '/home_page', page: () => HomePage()),
+  GetPage(name: '/conversa_ia', page: () => ConversaIa()), 
+  GetPage(name: '/mobile_home', page: () => MobileHome()),
+  GetPage(name: '/login', page: () => const LoginPage()),
+  GetPage(name: '/signup', page: () => const SignUpPage()),
+],
+
     );
 }
 }
