@@ -15,7 +15,14 @@ require('dotenv').config();
     password:{
         type: String,
         required: true,
-    }
+
+    },
+    images: {
+  type: Map,
+  of: String,
+  default: {},
+}
+
  });
 
  mongoSchema.methods.generateAuthToken = function(){
