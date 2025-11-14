@@ -62,6 +62,13 @@ class _ConversaIaState extends State<ConversaIa> {
                 final item = mensagens[index];
                 final imageUrl = item['imageUrl'];
 
+                // calcula tamanho responsivo para a imagem (máx 350)
+                final double _maxImageSize = 300.0;
+                final double _screenWidth = MediaQuery.of(context).size.width;
+                final double _imageSize = (_screenWidth * 0.9) > _maxImageSize
+                    ? _maxImageSize
+                    : (_screenWidth * 0.9);
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Column(
@@ -93,8 +100,8 @@ class _ConversaIaState extends State<ConversaIa> {
                               borderRadius: BorderRadius.circular(12),
                               child: imageUrl == null
                                   ? Container(
-                                      width: 350,
-                                      height: 350,
+                                      width: _imageSize,
+                                      height: _imageSize,
                                       color: const Color.fromARGB(
                                         0,
                                         255,
@@ -113,8 +120,8 @@ class _ConversaIaState extends State<ConversaIa> {
                                     )
                                   : Image.network(
                                       resolveImageUrl(imageUrl),
-                                      width: 350,
-                                      height: 350,
+                                      width: _imageSize,
+                                      height: _imageSize,
                                       fit: BoxFit.cover,
                                       errorBuilder:
                                           (context, error, stackTrace) {

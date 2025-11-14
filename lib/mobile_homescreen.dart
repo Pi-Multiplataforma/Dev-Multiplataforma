@@ -61,16 +61,10 @@ class AuthLandingPage extends StatelessWidget {
                   width: 120,
                   height: 120,
                   child: SvgPicture.asset(
-                    'assets/images/poliedro_logo.svg',
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Center(
-                        child: Icon(
-                          Icons.error_outline,
-                          color: Colors.white,
-                          size: 50,
-                        ),
-                      );
-                    },
+                    'assets/poliedro_logo.svg',
+                    //colorFilter: ColorFilter.mode(const Color.fromARGB(255, 101, 209, 237), BlendMode.srcIn),
+                    width: 35,
+                    height: 35,
                   ),
                 ),
                 const SizedBox(height: 60),
