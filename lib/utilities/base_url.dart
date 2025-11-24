@@ -1,1 +1,3 @@
-String baseUrl = 'http://localhost:3000';
+import '../../utilities/resolveUrl.dart';
+
+String baseUrl = getBaseUrl();

@@ -14,39 +14,65 @@ class ConversaIa extends StatefulWidget {
 class _ConversaIaState extends State<ConversaIa> {
   TextEditingController _controller = TextEditingController();
   List<Map<String, String?>> mensagens = [];
+  bool modoEdicaoAtivo = false;
 
   void responder() async {
-    final prompt = _controller.text.trim();
-    if (prompt.isEmpty) return;
+  final prompt = _controller.text.trim();
+  if (prompt.isEmpty) return;
 
-    setState(() {
-      mensagens.add({'prompt': prompt, 'imageUrl': null});
-      _controller.clear();
-    });
+  setState(() {
+    mensagens.add({'prompt': prompt, 'imageUrl': null});
+    _controller.clear();
+  });
 
-    final authController = Get.find<AuthController>();
-    final result = await authController.generateImage(prompt);
+  final authController = Get.find<AuthController>();
 
-    if (result['success']) {
-      final url = result['url'];
+  Map<String, dynamic> result;
 
-      setState(() {
-        final index = mensagens.lastIndexWhere(
-          (m) => m['prompt'] == prompt && m['imageUrl'] == null,
-        );
-        if (index != -1) {
-          mensagens[index] = {'prompt': prompt, 'imageUrl': url};
-        }
-      });
-    } else {
-      setState(() {
-        mensagens.removeWhere(
-          (m) => m['prompt'] == prompt && m['imageUrl'] == null,
-        );
-      });
-      Get.snackbar('Erro ao gerar imagem, tente novamente', result['error']);
-    }
+  if (modoEdicaoAtivo) {
+  final ultimaImagem = mensagens.lastWhere(
+    (m) => m['imageUrl'] != null,
+    orElse: () => {},
+  );
+
+  if (ultimaImagem.isEmpty) {
+    Get.snackbar(
+      'Modo edição ativado',
+      'Não há imagem anterior para editar.',
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+    );
+    return;
   }
+
+  final filename = ultimaImagem['imageUrl']!.split('/').last;
+  result = await authController.editImage(prompt, filename: filename);
+} else {
+  result = await authController.generateImage(prompt);
+}
+
+  if (result['success']) {
+    final url = result['url'];
+    setState(() {
+      final index = mensagens.lastIndexWhere(
+        (m) => m['prompt'] == prompt && m['imageUrl'] == null,
+      );
+      if (index != -1) {
+        mensagens[index] = {'prompt': prompt, 'imageUrl': url};
+      }
+    });
+  } else {
+    setState(() {
+      mensagens.removeWhere(
+        (m) => m['prompt'] == prompt && m['imageUrl'] == null,
+      );
+    });
+    Get.snackbar('Erro ao processar imagem', result['error']);
+  }
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -113,8 +139,8 @@ class _ConversaIaState extends State<ConversaIa> {
                                     )
                                   : Image.network(
                                       resolveImageUrl(imageUrl),
-                                      width: 350,
-                                      height: 350,
+                                      width: 300,
+                                      height: 300,
                                       fit: BoxFit.cover,
                                       errorBuilder:
                                           (context, error, stackTrace) {
@@ -147,9 +173,8 @@ class _ConversaIaState extends State<ConversaIa> {
                                           ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.of(
-                                                context,
-                                              ).pop(), 
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
                                               child: Text('Cancelar'),
                                             ),
                                             ElevatedButton(
@@ -168,23 +193,25 @@ class _ConversaIaState extends State<ConversaIa> {
                                                   return;
                                                 }
 
-                                                Navigator.of(
-                                                  context,
-                                                ).pop(); 
+                                                Navigator.of(context).pop();
+
+                                                final filename = imageUrl
+                                                    .split('/')
+                                                    .last;
 
                                                 final sucesso =
                                                     await Get.find<
                                                           AuthController
                                                         >()
-                                                        .addImageToUser(
+                                                        .addImageToGallery(
+                                                          filename,
                                                           chave,
-                                                          imageUrl,
                                                         );
 
                                                 if (sucesso) {
                                                   Get.snackbar(
                                                     'Imagem salva',
-                                                    'A imagem foi adicionada com a chave "$chave".',
+                                                    'A imagem foi adicionada na galeria com o nome: "$chave".',
                                                     backgroundColor:
                                                         Colors.green,
                                                     colorText: Colors.white,
@@ -225,7 +252,7 @@ class _ConversaIaState extends State<ConversaIa> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'Digite sua mensagem...',
+                      hintText: 'Descreva sua imagem...',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -243,6 +270,26 @@ class _ConversaIaState extends State<ConversaIa> {
                   ),
                   child: Icon(Icons.send),
                 ),
+                const SizedBox(width: 8),
+    ElevatedButton(
+  onPressed: () {
+    setState(() {
+      modoEdicaoAtivo = !modoEdicaoAtivo;
+    });
+  },
+  style: ElevatedButton.styleFrom(
+    backgroundColor: modoEdicaoAtivo ? Color(0xFF2DC7CD) : Colors.grey,
+    foregroundColor: Colors.white,
+    padding: EdgeInsets.all(12),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(4),
+    ),
+  ),
+  child: Icon(
+    modoEdicaoAtivo ? Icons.edit : Icons.edit_off,
+  ),
+),
+
               ],
             ),
           ),

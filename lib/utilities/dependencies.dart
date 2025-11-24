@@ -3,12 +3,21 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'base_url.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
+import 'dart:typed_data';
+import 'dart:io' show File;
+
+
+
 
 class AuthController extends GetxController {
   final createAccountUrl = Uri.parse('$baseUrl/api/users/createaccount');
   final signInUrl = Uri.parse('$baseUrl/api/users/sign-in');
   final addImageUrl = Uri.parse('$baseUrl/api/users/add-image');
   final userDataUrl = Uri.parse('$baseUrl/api/users/me');
+  final addToGalleryUrl = Uri.parse('$baseUrl/api/users/add-to-gallery');
+  final galleryUrl = Uri.parse('$baseUrl/api/users/gallery');
 
 
   RxBool isSignedIn = false.obs;
@@ -17,6 +26,14 @@ class AuthController extends GetxController {
 
 
   RxMap<String, dynamic> user = <String, dynamic>{}.obs;
+
+  RxList<Map<String, dynamic>> galeria = <Map<String, dynamic>>[].obs;
+
+Future<void> carregarGaleria() async {
+  final imagens = await fetchGallery();
+  galeria.value = imagens;
+}
+
 
 
   Future<String> createAccount(
@@ -120,8 +137,12 @@ Future<Map<String, dynamic>> generateImage(String prompt) async {
   }
 }
 
-Future<bool> addImageToUser(String key, String imageUrl) async {
-  final url = Uri.parse('$baseUrl/api/users/add-image');
+
+Future<Map<String, dynamic>> editImage(
+  String prompt, {
+  String? filename,
+}) async {
+  final url = Uri.parse('$baseUrl/api/users/edit-image');
 
   try {
     final response = await http.post(
@@ -131,23 +152,96 @@ Future<bool> addImageToUser(String key, String imageUrl) async {
         'x-auth-token': token.value,
       },
       body: jsonEncode({
-        'key': key,
-        'url': imageUrl,
+        'prompt': prompt,
+        if (filename != null) 'filename': filename, 
       }),
     );
 
     if (response.statusCode == 200) {
-      await fetchUserData(); 
+      final data = jsonDecode(response.body);
+
+      
+      final imageUrl = data['url'] ??
+          '$baseUrl/public/${data['filename']}'; 
+
+      return {
+        'success': true,
+        'url': imageUrl,
+        'prompt': data['prompt'],
+        'createdAt': DateTime.now().toString(),
+      };
+    } else {
+      return {
+        'success': false,
+        'error': response.body.toString(),
+      };
+    }
+  } catch (e) {
+    return {
+      'success': false,
+      'error': e.toString(),
+    };
+  }
+}
+
+
+
+Future<bool> addImageToGallery(String filename, String key) async {
+  final url = Uri.parse('$baseUrl/api/users/add-to-gallery');
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token.value,
+      },
+      body: jsonEncode({'filename': filename, 'key': key}),
+    );
+
+    if (response.statusCode == 200) {
+      await fetchUserData();
       return true;
     } else {
-      print('Erro: ${response.body}');
+      print('Erro ao adicionar à galeria: ${response.body}');
       return false;
     }
   } catch (e) {
-    print('Exceção: $e');
+    print('Exceção ao adicionar à galeria: $e');
     return false;
   }
 }
+
+
+Future<List<Map<String, dynamic>>> fetchGallery() async {
+  try {
+    final response = await http.get(
+      galleryUrl,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': token.value,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => {
+        'key': item['key'],   
+        'name': item['name'],
+        'url': item['url'],
+      }).toList();
+    } else {
+      print('Erro ao buscar galeria: ${response.body}');
+      return [];
+    }
+  } catch (e) {
+    print('Exceção ao buscar galeria: $e');
+    return [];
+  }
+}
+
+
+
 
 Future<bool> deleteImageFromUser(String key) async {
   final url = Uri.parse('$baseUrl/api/users/delete-image');
@@ -196,7 +290,13 @@ Future<void> fetchUserData() async {
       print('Erro ao buscar usuário: $e');
     }
   }
+
+   
+
+
 }
+
+
 
 
 class InitialBindings extends Bindings{
