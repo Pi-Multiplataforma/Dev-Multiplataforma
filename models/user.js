@@ -3,27 +3,21 @@ const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
- const mongoSchema = mongoose.Schema({
-    name: {
-        type: String, 
-        required: true,
-    },
-    email:{
-        type: String,
-        required: true,
-    },
-    password:{
-        type: String,
-        required: true,
+const mongoSchema = mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  images: {
+    type: Map,
+    of: String,
+    default: {},
+  },
+  lastImage: {
+    type: String,
+    default: null,
+  }
+});
 
-    },
-    images: {
-  type: Map,
-  of: String,
-  default: {},
-}
-
- });
 
  mongoSchema.methods.generateAuthToken = function(){
     const token = jwt.sign({_id: this._id}, process.env.JWT_PRIVATE_KEY);

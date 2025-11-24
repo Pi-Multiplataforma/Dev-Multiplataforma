@@ -54,8 +54,7 @@ Thumbs.db
 
 docker-compose.override.yml
 *.env.docker
-<<<<<<< HEAD
-=======
 
 public/
->>>>>>> recupera-trabalho
+
+credencial/
